@@ -30,13 +30,17 @@ if not access_token:
 
 print('Processing group ' + group_id + ' with tag ' + tag)
 
-def dump_post(post):
+dirname = '/' + output_folder + '/' + group_id
+if not os.path.exists(dirname):
+    os.makedirs(dirname)
+
+def dump_post(group_id, post):
     """
     Write every post to a file and paginate/dump its comments.
     It uses a .metadata file to track posts and avoid processing the same post twice
     """
 
-    filename = '/' + output_folder + '/' + 'post_' + tag + '_' + post['id']
+    filename = '/' + output_folder + '/' + group_id + '/' + 'post_' + tag + '_' + post['id']
 
     if os.path.isfile(filename + '.metadata'):
         print('Skip post ' + post['id'] + ' already crawled')
@@ -52,7 +56,7 @@ def dump_post(post):
         print('Dump comments', end='')
         while True: # paginate comments
             try:
-                [dump_comment(post=post, comment=comment) for comment in comments['data']]
+                [dump_comment(post['id'], comment) for comment in comments['data']]
                 comments = requests.get(comments['paging']['next']).json()
                 time.sleep(1) # be polite, we don't want FB to ban us
                 print('.', end='')
@@ -64,12 +68,17 @@ def dump_post(post):
     with open(filename + '.metadata', mode='w') as outfile:
         json.dump({'timestamp': str(datetime.datetime.now())}, outfile)
 
-def dump_comment(post, comment):
+def dump_comment(post_id, comment):
     """
     Write every comment to a file
     """
 
-    filename = '/' + output_folder + '/' + 'post_' + tag + '_' + post['id'] + '_comment_' + comment['id']
+    # adapt and enrich the comment with custom meta fields
+    comment['_meta_group_id'] = group_id
+    comment['_meta_post_id'] = post_id
+    comment['message'] = comment['message'].replace('\n', ' ')
+
+    filename = '/' + output_folder + '/' + 'post_' + tag + '_' + post_id + '_comment_' + comment['id']
     with open(filename + '.json', mode='w') as outfile:
         json.dump(comment, outfile, indent=4)
 
@@ -87,7 +96,7 @@ current_page = 0
 while current_page < MAX_PAGES:
     try:
         print('Page ' + str(current_page))
-        [dump_post(post=post) for post in posts['data']]
+        [dump_post(group_id, post) for post in posts['data']]
         posts = requests.get(posts['paging']['next']).json()
         current_page += 1
         time.sleep(0.2) # be polite, we don't want FB to ban us

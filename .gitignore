@@ -2,6 +2,8 @@
 *.bak
 .vscode
 
+data_raw/
+
 #temp files and large files
 *.npy
 runs/
