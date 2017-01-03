@@ -17,7 +17,7 @@ export OUTPUT_FOLDER=<your output directory>
 Analysis
 --
 
-Prerequisites: python, jupyter
+Prerequisites: python2 (download messages), python3 + jupyter (analyis)
 
 ```shell
 cd analysis
