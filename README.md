@@ -1,7 +1,8 @@
 Facebook Crawler
 ==
 
-Simple crawler to get information from Facebook Groups using Facebook Graph API and analyze it.
+Hacky crawler to get and analyze information from Facebook Groups using Facebook Graph API.
+Note: Graph API no longer provide access to private groups.
 
 Crawler
 --
